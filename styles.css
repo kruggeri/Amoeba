@@ -1,0 +1,9 @@
+.game-container {
+  display: flex;
+  justify-content: center;
+}
+
+canvas {
+  background-color: 175;
+
+}
