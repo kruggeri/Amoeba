@@ -195,13 +195,12 @@ function init(){
 
      const circles = [{x:400,y:400,r:40,color: '#4B6BF6',vx:1,vy:1},
                     {x:400,y:200,r:40,color:"#37B7C6",vx:-1,vy:1},
-                    {x:400,y:300,r:40,color:"#A644F3",vx:1,vy:-2},
+                    {x:400,y:300,r:40,color:"#A644F3",vx:1,vy:-1},
                     {x:600,y:300,r:40,color:"#061CFF",vx:-1,vy:1},
                     {x:700,y:400,r:40,color:"#0686FF",vx:-1,vy:-1},
                     {x:700,y:300,r:40,color:"#6037C6",vx:1,vy:1},
                     {x:500,y:380,r:40,color:"#438FFC",vx:1,vy:-1},
                     {x:300,y:400,r:40,color:"#8643FC",vx:1,vy:1},
-                    {x:300,y:400,r:40,color:"#E800FF",vx:1,vy:-1},
      ];
 
      const petriCenterX = 500;
@@ -213,6 +212,20 @@ function init(){
     // you have a center at (x, y). And you have a radius of r. And the points (x2, y2) on the edge of the circle are:
     // those where r = sqrt((x - x2)^2 + (y - y2)^2)
     // sqrt((x - x2)^2 + (y - y2)^2) the equation for distance from a point (x, y) to another point (x2, y2)
+		//
+		// function checkAmoebaIsOutOfRange(circleA) {
+		// 	const amoebaCenterDistanceToPetriCenter = Math.sqrt(
+		// 		Math.pow((circleA.x - petriCenterX), 2) +
+		// 		Math.pow((circleA.y - petriCenterY),2)
+		// 	 );
+		//
+		// 	if (amoebaCenterDistanceToPetriCenter >= (petriRadius - circleA.r) {
+		// 		circleA.x += circles[i].vx;
+		// 		circleA.y +=circles[i].vy;
+		// 	}
+		//
+		// }
+
 
     function checkAmoebaforCollisions(circleA) {
 
@@ -290,8 +303,8 @@ function init(){
     }
 
     function capSpeed (amoeba) {
-      const timesTooFast = Math.max(currentSpeed(amoeba.vx, amoeba.vy) / maxSpeed, 1);
-      const timesTooSlow = Math.max(minSpeed / currentSpeed(amoeba.vx, amoeba.vy), 1);
+      const timesTooFast = currentSpeed(amoeba.vx, amoeba.vy) / maxSpeed;
+      const timesTooSlow = minSpeed / currentSpeed(amoeba.vx, amoeba.vy);
 
 
 
@@ -304,9 +317,12 @@ function init(){
         // Take timesTooFast and use it to divide vx and vy.
         amoeba.vx = amoeba.vx / timesTooFast;
         amoeba.vy = amoeba.vy / timesTooFast;
+		
+
       } else if (currentSpeed(amoeba.vx, amoeba.vy) < minSpeed) {
-        amoeba.vx = amoeba.vx * timesTooSlow;
-        amoeba.vy = amoeba.vy * timesTooSlow;
+        amoeba.vx = amoeba.vx + 0.1;
+        amoeba.vy = amoeba.vy + 0.1 ;
+
       }
     }
 
@@ -322,15 +338,23 @@ function init(){
              c.beginPath();
              c.arc(circles[i].x,circles[i].y,circles[i].r,0,2*Math.PI,false);
              c.fill();
+						//  console.log(circles[i]);
 
              const currentCircle = circles[i];
             // sqrt((x - x2)^2 + (y - y2)^2)
             // Math.pow(123, 2)
 
+						// debugger
+						console.log('current circle is..');
+						console.log(i);
+						console.log('continue on');
             checkAmoebaforCollisions(currentCircle);
 						// checkAmoebaIsOutOfRange(currentCircle);
-             circles[i].x +=circles[i].vx;
-             circles[i].y +=circles[i].vy;
+
+
+							currentCircle.x += currentCircle.vx;
+							currentCircle.y += currentCircle.vy;
+
          }
 
          requestAnimationFrame(draw);
