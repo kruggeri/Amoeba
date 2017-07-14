@@ -1,9 +1,10 @@
 .game-container {
   display: flex;
   justify-content: center;
+  margin-top: 5%; 
 }
 
 canvas {
   background-color: 175;
-  cursor: pointer; 
+  cursor: pointer;
 }
