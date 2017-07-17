@@ -8,6 +8,7 @@ var palette = distinctColors();
 (function(){
 
   let currentScore = 0;
+  let hearts = 3;
 
 function init(){
 
@@ -28,16 +29,7 @@ function init(){
      c.fillText(`${currentScore}`, 800, 750);
 
 
-     c.beginPath();
-     c.moveTo(75, 40);
-     c.bezierCurveTo(75, 37, 70, 25, 50, 25);
-     c.bezierCurveTo(20, 25, 20, 62.5, 20, 62.5);
-     c.bezierCurveTo(20, 80, 40, 102, 75, 120);
-     c.bezierCurveTo(110, 102, 130, 80, 130, 62.5);
-     c.bezierCurveTo(130, 62.5, 130, 25, 100, 25);
-     c.bezierCurveTo(85, 25, 75, 37, 75, 40);
-     c.fillStyle = "white"; 
-     c.fill();
+
 
 
      function initialCircles() {
@@ -80,6 +72,23 @@ function init(){
 		// 	}
 		//
 		// }
+
+    // function updateHearts(num) {
+    //   hearts += num;
+    //
+    //   if nums >= 1
+    //   c.beginPath();
+    //   c.moveTo(75, 40);
+    //   c.bezierCurveTo(75, 37, 70, 25, 50, 25);
+    //   c.bezierCurveTo(20, 25, 20, 62.5, 20, 62.5);
+    //   c.bezierCurveTo(20, 80, 40, 102, 75, 120);
+    //   c.bezierCurveTo(110, 102, 130, 80, 130, 62.5);
+    //   c.bezierCurveTo(130, 62.5, 130, 25, 100, 25);
+    //   c.bezierCurveTo(85, 25, 75, 37, 75, 40);
+    //   c.fillStyle = "white";
+    //   c.fill();
+    //
+    // }
 
 
     function updateScore(points) {
