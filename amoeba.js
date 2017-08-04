@@ -10,6 +10,7 @@ var palette = distinctColors();
   let currentScore = 0;
   let hearts = 3;
 
+
 function init(){
 
      var canvas = document.getElementsByTagName('canvas')[0];
@@ -20,6 +21,8 @@ function init(){
      c.fillStyle = '#4B6BF6';
      c.strokeStyle = '#4B6BF6';
      c.fillRect(0, 0, 1000, 700);
+
+
 
      c.strokeStyle = "black";
      c.fillStyle = "black";
@@ -89,6 +92,13 @@ function init(){
     //   c.fill();
     //
     // }
+
+    function startTimer() {
+      var ctx  = canvas.getContext("2d");
+
+
+
+    }
 
 
     function updateScore(points) {
@@ -341,11 +351,22 @@ function init(){
      function draw(){
 
 
+            c.beginPath();
+                c.arc(petriCenterX, petriCenterY, petriRadius + 40, 0, 2*Math.PI, false);
+                c.fillStyle = '#2A2A2A';
+                c.fill();
+                c.lineWidth = 20;
+                c.strokeStyle = '#2A2A2A';
+                c.stroke();
+                c.closePath();
 
-         c.arc(petriCenterX, petriCenterY, petriRadius, 0, 2*Math.PI, true);
+
+
+         c.beginPath();
+         c.arc(petriCenterX, petriCenterY, petriRadius, 0, 2*Math.PI, false);
          c.fillStyle = 'black';
-         c.strokeStyle = 'black';
          c.fill();
+         c.closePath();
          document.addEventListener("click", handleClick, false);
 
 
@@ -358,10 +379,12 @@ function init(){
 
 
          for(var i=0; i < circles.length; i++){
+             c.beginPath();
              c.fillStyle = circles[i].color;
              c.beginPath();
              c.arc(circles[i].x,circles[i].y,circles[i].r,0,2*Math.PI,false);
              c.fill();
+             c.closePath();
 
              const currentCircle = circles[i];
              const targetAmoeba = circles[0];
