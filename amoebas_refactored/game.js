@@ -1,46 +1,83 @@
+import Amoeba from './amoebas.js';
+const distinctColors = require('distinct-colors');
+const chromaJS = require('chroma-js');
+const palette = distinctColors();
+
+class Game {
+  constructor() {
+    this.circles = this.createInitialAmoebas();
+    this.targetAmoeba = this.circles[0];
+    this.currentScore = 0;
+    this.canvas = document.getElementsByTagName('canvas')[0];
+  }
+
+  createInitialAmoebas() {
+    return [
+      new Amoeba(400, 400, 40, '#4B6BF6', 1, 1),
+      new Amoeba(400, 200, 40, "#37B7C6", -1, 1),
+      new Amoeba(400, 300, 40, "#A644F3", 1, -1),
+      new Amoeba(600, 300, 40,"#061CFF", -1, 1),
+      new Amoeba(700, 400, 40,"#0686FF", -1, -1),
+      new Amoeba(700, 300, 40,"#6037C6", 1, 1),
+      new Amoeba(500, 380, 40,"#438FFC", 1, -1),
+      new Amoeba(300, 400, 40,"#8643FC", 1, 1),
+    ];
+  }
 
 
+  createInitialCanvas() {
+    this.canvas.width = 1000;
+    this.canvas.height = 775;
 
+    const c = this.canvas.getContext('2d');
+    c.fillStyle = '#4B6BF6';
+    c.strokeStyle = '#4B6BF6';
+    c.fillRect(0, 0, 1000, 700);
 
-// import Amoeba from './amoebas';
-// import Background from './background';
-//
-// class Game {
-//
-//   constructor() {
-//     this.amoebas = [];
-//
-//     this.addAmoebas();
-//   }
-//
-//
-//   addAmoebas() {
-//     this.amoebas.push(new Amoeba("#4B6BF6", [500, 350]));
-//   }
-//
-//   moveAmoebas() {
-//     this.amoebas.forEach( (object) => {
-//       object.move();
-//     })
-//   }
-//
-//   start() {
-//       //start the animation
-//       requestAnimationFrame(this.animate.bind(this));
-//     }
-// }
-//
-// Game.NUM_AMOEBAS = 9;
-// Game.DIM_X = 1000;
-// Game.DIM_Y = 600;
-//
-//
-// const amoebaOne = () => new Amoeba("#4B6BF6", [500, 350]);
-// const amoebaTwo = () => new Amoeba("#37B7C6", [600, 450]);
-// const amoebaThree = () =>  new Amoeba("#A644F3", [650, 350]);
-// const amoebaFour = () =>  new Amoeba("#061CFF", [350, 350]);
-// const amoebaFive = () =>  new Amoeba("#0686FF", [400, 200]);
-// const amoebaSix = () =>  new Amoeba("#E800FF", [600, 200]);
-// const amoebaSeven = () =>  new Amoeba("#8643FC", [500, 250]);
-// const amoebaEight = () =>  new Amoeba("#438FFC", [500, 550]);
-// const amoebaNine = () =>  new Amoeba("#6037C6", [400, 450]);
+    this.updateScore(0);
+  }
+
+  updateScore(points) {
+    this.currentScore += points;
+    const c = this.canvas.getContext('2d');
+    c.strokeStyle = "black";
+    c.fillStyle = "black";
+    c.fillRect(0, 700, 1000, 75);
+    c.font = "40px Arial";
+    c.fillStyle = "white";
+    c.fillText(`${this.currentScore}`, 800, 750);
+  }
+
+  createNewAmoebaBatch() {
+    let newCircles = this.createInitialAmoebas();
+    this.changeAmoebaColors(newCircles);
+    return newCircles;
+  }
+
+  changeAmoebaColors(circles) {
+    const hueMin = Math.floor(Math.random() * 300);
+    const hueMax = hueMin + 30;
+    let options = {
+      count: circles.length,
+      hueMin: hueMin,
+      hueMax: hueMax
+    };
+    let newPalette = distinctColors(options);
+
+    for (let i = 0; i < newPalette.length; i++) {
+      circles[i].color = newPalette[i].hex();
+    }
+    this.targetAmoeba = circles[0];
+    this.changeBackground(circles[0].color);
+  }
+
+  changeBackground(targetColor) {
+    const c = this.canvas.getContext('2d');
+    c.fillStyle = targetColor;
+    c.strokeStyle = targetColor;
+    c.fillRect(0, 0, 1000, 700);
+  }
+  
+}
+
+export default Game;
