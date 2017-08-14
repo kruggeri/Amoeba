@@ -15,19 +15,6 @@ class Amoeba {
       this.vy = vy;
     }
 
-    draw(ctx) {
-      ctx.fillStyle = this.color;
-      ctx.arc(
-        this.pos[0], this.pos[1], this.radius, 0, 2*Math.PI, true
-      );
-      ctx.fill();
-    }
-
-    move() {
-      this.pos[0] += this.vel[0];
-      this.pos[1] += this.vel[1];
-    }
-
 		reverseDirectionIfAtPetriEdge(petri) {
 			const amoebaCenterDistanceToPetriCenter = Math.sqrt(
 				Math.pow((this.x - petri.centerX), 2) +
@@ -107,7 +94,6 @@ class Amoeba {
 		}
 
 		draw(ctx) {
-			ctx.beginPath();
 			ctx.fillStyle = this.color;
 			ctx.beginPath();
 			ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);

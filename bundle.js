@@ -63,11 +63,209 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__amoebas_js__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__petri_js__ = __webpack_require__(3);
+
+
+const distinctColors = __webpack_require__(5);
+const chromaJS = __webpack_require__(4);
+const palette = distinctColors();
+
+class Game {
+  constructor() {
+    this.circles = this.createInitialAmoebas();
+    this.targetAmoeba = this.circles[0];
+    this.currentScore = 0;
+    this.canvas = document.getElementsByTagName('canvas')[0];
+    this.drawInitialCanvas();
+    this.petri = new __WEBPACK_IMPORTED_MODULE_1__petri_js__["a" /* default */]();
+    this.whiteOutScreen = false;
+  }
+
+  createInitialAmoebas() {
+    return [
+      new __WEBPACK_IMPORTED_MODULE_0__amoebas_js__["a" /* default */](400, 400, 40, '#4B6BF6', 1, 1),
+      new __WEBPACK_IMPORTED_MODULE_0__amoebas_js__["a" /* default */](400, 200, 40, "#37B7C6", -1, 1),
+      new __WEBPACK_IMPORTED_MODULE_0__amoebas_js__["a" /* default */](400, 300, 40, "#A644F3", 1, -1),
+      new __WEBPACK_IMPORTED_MODULE_0__amoebas_js__["a" /* default */](600, 300, 40,"#061CFF", -1, 1),
+      new __WEBPACK_IMPORTED_MODULE_0__amoebas_js__["a" /* default */](700, 400, 40,"#0686FF", -1, -1),
+      new __WEBPACK_IMPORTED_MODULE_0__amoebas_js__["a" /* default */](700, 300, 40,"#6037C6", 1, 1),
+      new __WEBPACK_IMPORTED_MODULE_0__amoebas_js__["a" /* default */](500, 380, 40,"#438FFC", 1, -1),
+      new __WEBPACK_IMPORTED_MODULE_0__amoebas_js__["a" /* default */](300, 400, 40,"#8643FC", 1, 1),
+    ];
+  }
+
+  drawInitialCanvas() {
+    this.canvas.width = 1000;
+    this.canvas.height = 775;
+
+    const c = this.canvas.getContext('2d');
+    c.fillStyle = '#4B6BF6';
+    c.strokeStyle = '#4B6BF6';
+    c.fillRect(0, 0, 1000, 700);
+
+    this.updateScore(0);
+  }
+
+  updateScore(points) {
+    this.currentScore += points;
+  }
+
+  drawScore() {
+    const c = this.canvas.getContext('2d');
+    c.strokeStyle = "black";
+    c.fillStyle = "black";
+    c.fillRect(0, 700, 1000, 75);
+    c.font = "40px Arial";
+    c.fillStyle = "white";
+    c.fillText(`${this.currentScore}`, 800, 750);
+  }
+
+  createNewAmoebaBatch() {
+    this.circles = this.createInitialAmoebas();
+    this.changeAmoebaColors();
+  }
+
+  changeAmoebaColors() {
+    const hueMin = Math.floor(Math.random() * 300);
+    const hueMax = hueMin + 30;
+    let options = {
+      count: this.circles.length,
+      hueMin: hueMin,
+      hueMax: hueMax
+    };
+    let newPalette = distinctColors(options);
+
+    for (let i = 0; i < newPalette.length; i++) {
+      this.circles[i].color = newPalette[i].hex();
+    }
+    this.targetAmoeba = this.circles[0];
+    this.changeBackground(this.circles[0].color);
+  }
+
+  drawBackground(ctx) {
+    // clear canvas
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    //add background back in
+    ctx.fillStyle = this.targetAmoeba.color;
+    ctx.fillRect(0, 0, 1000, 700);
+    ctx.beginPath();
+    ctx.arc(500, 350, 250, 0, 2 * Math.PI, true);
+    ctx.strokeStyle = "#2C2E37";
+    ctx.lineWidth = 40;
+    ctx.stroke();
+    ctx.fillStyle = "black";
+    ctx.fill();
+  }
+
+  changeBackground(targetColor) {
+    const c = this.canvas.getContext('2d');
+    c.fillStyle = targetColor;
+    c.strokeStyle = targetColor;
+    c.fillRect(0, 0, 1000, 700);
+  }
+
+  move() {
+    this.circles.forEach((circle) => {
+      circle.move(this.petri, this.circles);
+    });
+  }
+
+  draw() {
+    const c = this.canvas.getContext('2d');
+
+    if (this.whiteOutScreen) {
+      this.drawWhiteOutScreen();
+    } else {
+      this.drawBackground(c);
+      this.petri.draw(c);
+      this.drawScore();
+      this.circles.forEach((circle) => {
+        circle.draw(c);
+      });
+    }
+  }
+
+  checkForNoAmoebas() {
+    if (this.circles.length < 1) {
+      this.createNewAmoebaBatch();
+    }
+  }
+
+  didClickOnTarget(event) {
+    const rect = this.canvas.getBoundingClientRect();
+    const xPosition = event.clientX - rect.left;
+    const yPosition = event.clientY - rect.top;
+    const clickDistance = Math.sqrt(
+      Math.pow(xPosition - this.targetAmoeba.x, 2) +
+      Math.pow(yPosition - this.targetAmoeba.y, 2)
+    );
+    return (clickDistance < this.targetAmoeba.r);
+  }
+
+  handleSuccessfulClick() {
+    this.circles.shift();
+    this.updateScore(3);
+    this.checkForNoAmoebas();
+    this.changeAmoebaColors();
+  }
+
+  handleFailedClick() {
+    this.whiteOutScreen = true;
+    setTimeout(() => {
+      this.whiteOutScreen = false;
+    }, 125);
+    this.updateScore(-3);
+  }
+
+  drawWhiteOutScreen() {
+    const c = this.canvas.getContext('2d');
+    c.fillStyle = "#FFFFFF";
+    c.strokeStyle = "#FFFFFF";
+    c.fillRect(0, 0, 1000, 700);
+    c.fill();
+  }
+
+  handleClick(event) {
+    if (this.didClickOnTarget(event)) {
+      this.handleSuccessfulClick();
+    } else {
+      this.handleFailedClick();
+    }
+  }
+
+  play() {
+    document.addEventListener("click", (event) => {
+      this.handleClick(event);
+    }, false);
+    this.playTurn();
+  }
+
+  playTurn() {
+    this.checkForNoAmoebas();
+    this.move();
+    this.draw();
+
+    requestAnimationFrame(() => {
+      this.playTurn();
+    });
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Game);
+
+
+/***/ }),
+/* 1 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -86,19 +284,6 @@ class Amoeba {
       this.color = color;
       this.vx = vx;
       this.vy = vy;
-    }
-
-    draw(ctx) {
-      ctx.fillStyle = this.color;
-      ctx.arc(
-        this.pos[0], this.pos[1], this.radius, 0, 2*Math.PI, true
-      );
-      ctx.fill();
-    }
-
-    move() {
-      this.pos[0] += this.vel[0];
-      this.pos[1] += this.vel[1];
     }
 
 		reverseDirectionIfAtPetriEdge(petri) {
@@ -180,7 +365,6 @@ class Amoeba {
 		}
 
 		draw(ctx) {
-			ctx.beginPath();
 			ctx.fillStyle = this.color;
 			ctx.beginPath();
 			ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
@@ -195,11 +379,58 @@ class Amoeba {
 		}
 }
 
-/* unused harmony default export */ var _unused_webpack_default_export = (Amoeba);
+/* harmony default export */ __webpack_exports__["a"] = (Amoeba);
 
 
 /***/ }),
-/* 1 */
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__game_js__ = __webpack_require__(0);
+
+
+const game = new __WEBPACK_IMPORTED_MODULE_0__game_js__["a" /* default */]();
+game.play();
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Petri {
+
+  constructor() {
+    this.centerX = 500;
+    this.centerY = 350;
+    this.radius = 250;
+  }
+
+  draw(ctx) {
+    ctx.beginPath();
+    ctx.arc(this.centerX, this.centerY, this.radius + 40, 0, 2 * Math.PI, false);
+    ctx.fillStyle = '#2A2A2A';
+    ctx.fill();
+    ctx.lineWidth = 20;
+    ctx.strokeStyle = '#2A2A2A';
+    ctx.stroke();
+    ctx.closePath();
+
+    ctx.beginPath();
+    ctx.arc(this.centerX, this.centerY, this.radius, 0, 2 * Math.PI, false);
+    ctx.fillStyle = 'black';
+    ctx.fill();
+    ctx.closePath();
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Petri);
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
@@ -2911,10 +3142,10 @@ class Amoeba {
 
 }).call(this);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)(module)))
 
 /***/ }),
-/* 2 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -6460,136 +6691,7 @@ return /******/ (function(modules) { // webpackBootstrap
 ;
 
 /***/ }),
-/* 3 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__amoebas_refactored_amoebas_js__ = __webpack_require__(0);
-
-
-var distinctColors = __webpack_require__(2);
-var chromaJS = __webpack_require__(1);
-var palette = distinctColors();
-
-
-(function(){
-
-  let currentScore = 0;
-  let hearts = 3;
-
-
-function init(){
-
-//     function successfulClickPopAnimation(targetAmoeba) {
-//       // setTimeout( function() {
-//       //   setInterval( )
-//       //
-//       //
-//       //
-//       //
-//       //
-//       // }, 500);
-//       let angles = [0, 45, 90, 135, 180, 225, 270, 315];
-//       let length = targetAmoeba.r;
-//       var ctx = canvas.getContext('2d');
-//
-//       // cover up circle before you draw lines
-//       ctx.fillStyle = "#000000";
-//       ctx.beginPath();
-//       ctx.arc(targetAmoeba.x,targetAmoeba.y,targetAmoeba.r,0,2*Math.PI,false);
-//       ctx.fill();
-//
-//       angles.forEach( angle => {
-//           let radians = angle / 180 * Math.PI;
-//           let endX = targetAmoeba.x + length * Math.cos(radians);
-//           let endY = targetAmoeba.y - length * Math.sin(radians);
-//
-//           var ctx = canvas.getContext('2d');
-//
-//           ctx.strokeStyle = targetAmoeba.color;
-//           ctx.lineWidth = "3";
-//
-//           ctx.moveTo(targetAmoeba.x, targetAmoeba.y);
-//
-//           ctx.lineTo(endX, endY);
-//           ctx.stroke();
-//           debugger
-// //
-//           ctx.fillStyle = "#000000";
-//           ctx.beginPath();
-//           ctx.arc(targetAmoeba.x,targetAmoeba.y,targetAmoeba.r/2,0,2*Math.PI,false);
-//           ctx.fill();
-//         });
-//
-//
-//
-//   }
-    function handleClick(e) {
-
-      var rect = canvas.getBoundingClientRect();
-      var xPosition = event.clientX - rect.left;
-      var yPosition = event.clientY - rect.top;
-      if (Math.sqrt((xPosition-targetAmoeba.x)*(xPosition-targetAmoeba.x) + (yPosition-targetAmoeba.y)*(yPosition-targetAmoeba.y)) < targetAmoeba.r) {
-          console.log('circles will be shifted');
-
-          console.log(targetAmoeba);
-          var oldTarget = targetAmoeba;
-          circles.shift();
-          successfulClickPopAnimation(oldTarget);
-
-          updateScore(3);
-          changeAmoebaColors(circles);
-
-
-      } else {
-
-          var c = canvas.getContext('2d');
-          var backgroundColor = circles[0].color;
-          c.fillStyle = "#FFFFFF";
-          c.strokeStyle = "#FFFFFF";
-          c.fillRect(0, 0, 1000, 700);
-
-          c.fill();
-
-          setTimeout( function() {
-            c.fillStyle = backgroundColor;
-            c.strokeStyle = backgroundColor;
-            c.fillRect(0, 0, 1000, 700);
-          }, 125);
-          updateScore(-3);
-      }
-
-    }
-
-     function draw(){
-       petri.draw();
-         document.addEventListener("click", handleClick, false);
-
-         if (circles.length < 1) {
-           circles = createNewAmoebaBatch();
-         }
-
-
-         circles.forEach((circle) => {
-           circle.draw(ctx);
-           circle.move(petri, circles);
-         });
-
-         requestAnimationFrame(draw);
-     }
-    requestAnimationFrame(draw);
-}
-
-//invoke function init once document is fully loaded
-
-window.addEventListener('load',init,false);
-
-}());
-
-
-/***/ }),
-/* 4 */
+/* 6 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {

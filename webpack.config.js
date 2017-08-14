@@ -2,7 +2,7 @@ var path = require('path');
 
 
 module.exports = {
-  entry: './amoeba.js',
+  entry: './amoebas_refactored/main.js',
   output: {
     filename: 'bundle.js',
   },
