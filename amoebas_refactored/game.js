@@ -1,4 +1,4 @@
-import Amoeba from './amoebas.js';
+import Amoeba from './amoeba.js';
 import Petri from './petri.js';
 const distinctColors = require('distinct-colors');
 
@@ -11,6 +11,36 @@ class Game {
     this.drawInitialCanvas();
     this.petri = new Petri();
     this.whiteOutScreen = false;
+  }
+
+  changeAmoebaColors() {
+    const hueMin = Math.floor(Math.random() * 300);
+    const hueMax = hueMin + 30;
+    let options = {
+      count: this.circles.length,
+      hueMin: hueMin,
+      hueMax: hueMax
+    };
+    const newPalette = distinctColors(options);
+
+    for (let i = 0; i < newPalette.length; i++) {
+      this.circles[i].color = newPalette[i].hex();
+    }
+    this.targetAmoeba = this.circles[0];
+    this.changeBackground(this.circles[0].color);
+  }
+
+  changeBackground(targetColor) {
+    const ctx = this.canvas.getContext('2d');
+    ctx.fillStyle = targetColor;
+    ctx.strokeStyle = targetColor;
+    ctx.fillRect(0, 0, 1000, 700);
+  }
+
+  checkForNoAmoebas() {
+    if (this.circles.length < 1) {
+      this.createNewAmoebaBatch();
+    }
   }
 
   createInitialAmoebas() {
@@ -26,52 +56,35 @@ class Game {
     ];
   }
 
-  drawInitialCanvas() {
-    this.canvas.width = 1000;
-    this.canvas.height = 775;
-
-    const c = this.canvas.getContext('2d');
-    c.fillStyle = '#4B6BF6';
-    c.strokeStyle = '#4B6BF6';
-    c.fillRect(0, 0, 1000, 700);
-
-    this.updateScore(0);
-  }
-
-  updateScore(points) {
-    this.currentScore += points;
-  }
-
-  drawScore() {
-    const c = this.canvas.getContext('2d');
-    c.strokeStyle = "black";
-    c.fillStyle = "black";
-    c.fillRect(0, 700, 1000, 75);
-    c.font = "40px Arial";
-    c.fillStyle = "white";
-    c.fillText(`${this.currentScore}`, 800, 750);
-  }
-
   createNewAmoebaBatch() {
     this.circles = this.createInitialAmoebas();
     this.changeAmoebaColors();
   }
 
-  changeAmoebaColors() {
-    const hueMin = Math.floor(Math.random() * 300);
-    const hueMax = hueMin + 30;
-    let options = {
-      count: this.circles.length,
-      hueMin: hueMin,
-      hueMax: hueMax
-    };
-    let newPalette = distinctColors(options);
+  didClickOnTarget(event) {
+    const rect = this.canvas.getBoundingClientRect();
+    const xPosition = event.clientX - rect.left;
+    const yPosition = event.clientY - rect.top;
+    const clickDistance = Math.sqrt(
+      Math.pow(xPosition - this.targetAmoeba.x, 2) +
+      Math.pow(yPosition - this.targetAmoeba.y, 2)
+    );
+    return (clickDistance < this.targetAmoeba.r);
+  }
 
-    for (let i = 0; i < newPalette.length; i++) {
-      this.circles[i].color = newPalette[i].hex();
+  draw() {
+    const ctx = this.canvas.getContext('2d');
+
+    if (this.whiteOutScreen) {
+      this.drawWhiteOutScreen();
+    } else {
+      this.drawBackground(ctx);
+      this.petri.draw(ctx);
+      this.drawScore();
+      this.circles.forEach((circle) => {
+        circle.draw(ctx);
+      });
     }
-    this.targetAmoeba = this.circles[0];
-    this.changeBackground(this.circles[0].color);
   }
 
   drawBackground(ctx) {
@@ -90,56 +103,42 @@ class Game {
     ctx.fill();
   }
 
-  changeBackground(targetColor) {
-    const c = this.canvas.getContext('2d');
-    c.fillStyle = targetColor;
-    c.strokeStyle = targetColor;
-    c.fillRect(0, 0, 1000, 700);
+  drawInitialCanvas() {
+    this.canvas.width = 1000;
+    this.canvas.height = 775;
+
+    const ctx = this.canvas.getContext('2d');
+    ctx.fillStyle = '#4B6BF6';
+    ctx.strokeStyle = '#4B6BF6';
+    ctx.fillRect(0, 0, 1000, 700);
+
+    this.updateScore(0);
   }
 
-  move() {
-    this.circles.forEach((circle) => {
-      circle.move(this.petri, this.circles);
-    });
+  drawScore() {
+    const ctx = this.canvas.getContext('2d');
+    ctx.strokeStyle = "black";
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 700, 1000, 75);
+    ctx.font = "40px Arial";
+    ctx.fillStyle = "white";
+    ctx.fillText(`${this.currentScore}`, 800, 750);
   }
 
-  draw() {
-    const c = this.canvas.getContext('2d');
+  drawWhiteOutScreen() {
+    const ctx = this.canvas.getContext('2d');
+    ctx.fillStyle = "#FFFFFF";
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, 1000, 700);
+    ctx.fill();
+  }
 
-    if (this.whiteOutScreen) {
-      this.drawWhiteOutScreen();
+  handleClick(event) {
+    if (this.didClickOnTarget(event)) {
+      this.handleSuccessfulClick();
     } else {
-      this.drawBackground(c);
-      this.petri.draw(c);
-      this.drawScore();
-      this.circles.forEach((circle) => {
-        circle.draw(c);
-      });
+      this.handleFailedClick();
     }
-  }
-
-  checkForNoAmoebas() {
-    if (this.circles.length < 1) {
-      this.createNewAmoebaBatch();
-    }
-  }
-
-  didClickOnTarget(event) {
-    const rect = this.canvas.getBoundingClientRect();
-    const xPosition = event.clientX - rect.left;
-    const yPosition = event.clientY - rect.top;
-    const clickDistance = Math.sqrt(
-      Math.pow(xPosition - this.targetAmoeba.x, 2) +
-      Math.pow(yPosition - this.targetAmoeba.y, 2)
-    );
-    return (clickDistance < this.targetAmoeba.r);
-  }
-
-  handleSuccessfulClick() {
-    this.circles.shift();
-    this.updateScore(3);
-    this.checkForNoAmoebas();
-    this.changeAmoebaColors();
   }
 
   handleFailedClick() {
@@ -150,20 +149,17 @@ class Game {
     this.updateScore(-3);
   }
 
-  drawWhiteOutScreen() {
-    const c = this.canvas.getContext('2d');
-    c.fillStyle = "#FFFFFF";
-    c.strokeStyle = "#FFFFFF";
-    c.fillRect(0, 0, 1000, 700);
-    c.fill();
+  handleSuccessfulClick() {
+    this.circles.shift();
+    this.updateScore(3);
+    this.checkForNoAmoebas();
+    this.changeAmoebaColors();
   }
 
-  handleClick(event) {
-    if (this.didClickOnTarget(event)) {
-      this.handleSuccessfulClick();
-    } else {
-      this.handleFailedClick();
-    }
+  move() {
+    this.circles.forEach((circle) => {
+      circle.move(this.petri, this.circles);
+    });
   }
 
   play() {
@@ -181,6 +177,10 @@ class Game {
     requestAnimationFrame(() => {
       this.playTurn();
     });
+  }
+
+  updateScore(points) {
+    this.currentScore += points;
   }
 }
 

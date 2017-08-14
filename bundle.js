@@ -71,7 +71,7 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__amoebas_js__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__amoeba_js__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__petri_js__ = __webpack_require__(3);
 
 
@@ -88,50 +88,6 @@ class Game {
     this.whiteOutScreen = false;
   }
 
-  createInitialAmoebas() {
-    return [
-      new __WEBPACK_IMPORTED_MODULE_0__amoebas_js__["a" /* default */](400, 400, 40, '#4B6BF6', 1, 1),
-      new __WEBPACK_IMPORTED_MODULE_0__amoebas_js__["a" /* default */](400, 200, 40, "#37B7C6", -1, 1),
-      new __WEBPACK_IMPORTED_MODULE_0__amoebas_js__["a" /* default */](400, 300, 40, "#A644F3", 1, -1),
-      new __WEBPACK_IMPORTED_MODULE_0__amoebas_js__["a" /* default */](600, 300, 40,"#061CFF", -1, 1),
-      new __WEBPACK_IMPORTED_MODULE_0__amoebas_js__["a" /* default */](700, 400, 40,"#0686FF", -1, -1),
-      new __WEBPACK_IMPORTED_MODULE_0__amoebas_js__["a" /* default */](700, 300, 40,"#6037C6", 1, 1),
-      new __WEBPACK_IMPORTED_MODULE_0__amoebas_js__["a" /* default */](500, 380, 40,"#438FFC", 1, -1),
-      new __WEBPACK_IMPORTED_MODULE_0__amoebas_js__["a" /* default */](300, 400, 40,"#8643FC", 1, 1),
-    ];
-  }
-
-  drawInitialCanvas() {
-    this.canvas.width = 1000;
-    this.canvas.height = 775;
-
-    const c = this.canvas.getContext('2d');
-    c.fillStyle = '#4B6BF6';
-    c.strokeStyle = '#4B6BF6';
-    c.fillRect(0, 0, 1000, 700);
-
-    this.updateScore(0);
-  }
-
-  updateScore(points) {
-    this.currentScore += points;
-  }
-
-  drawScore() {
-    const c = this.canvas.getContext('2d');
-    c.strokeStyle = "black";
-    c.fillStyle = "black";
-    c.fillRect(0, 700, 1000, 75);
-    c.font = "40px Arial";
-    c.fillStyle = "white";
-    c.fillText(`${this.currentScore}`, 800, 750);
-  }
-
-  createNewAmoebaBatch() {
-    this.circles = this.createInitialAmoebas();
-    this.changeAmoebaColors();
-  }
-
   changeAmoebaColors() {
     const hueMin = Math.floor(Math.random() * 300);
     const hueMax = hueMin + 30;
@@ -140,13 +96,70 @@ class Game {
       hueMin: hueMin,
       hueMax: hueMax
     };
-    let newPalette = distinctColors(options);
+    const newPalette = distinctColors(options);
 
     for (let i = 0; i < newPalette.length; i++) {
       this.circles[i].color = newPalette[i].hex();
     }
     this.targetAmoeba = this.circles[0];
     this.changeBackground(this.circles[0].color);
+  }
+
+  changeBackground(targetColor) {
+    const ctx = this.canvas.getContext('2d');
+    ctx.fillStyle = targetColor;
+    ctx.strokeStyle = targetColor;
+    ctx.fillRect(0, 0, 1000, 700);
+  }
+
+  checkForNoAmoebas() {
+    if (this.circles.length < 1) {
+      this.createNewAmoebaBatch();
+    }
+  }
+
+  createInitialAmoebas() {
+    return [
+      new __WEBPACK_IMPORTED_MODULE_0__amoeba_js__["a" /* default */](400, 400, 40, '#4B6BF6', 1, 1),
+      new __WEBPACK_IMPORTED_MODULE_0__amoeba_js__["a" /* default */](400, 200, 40, "#37B7C6", -1, 1),
+      new __WEBPACK_IMPORTED_MODULE_0__amoeba_js__["a" /* default */](400, 300, 40, "#A644F3", 1, -1),
+      new __WEBPACK_IMPORTED_MODULE_0__amoeba_js__["a" /* default */](600, 300, 40,"#061CFF", -1, 1),
+      new __WEBPACK_IMPORTED_MODULE_0__amoeba_js__["a" /* default */](700, 400, 40,"#0686FF", -1, -1),
+      new __WEBPACK_IMPORTED_MODULE_0__amoeba_js__["a" /* default */](700, 300, 40,"#6037C6", 1, 1),
+      new __WEBPACK_IMPORTED_MODULE_0__amoeba_js__["a" /* default */](500, 380, 40,"#438FFC", 1, -1),
+      new __WEBPACK_IMPORTED_MODULE_0__amoeba_js__["a" /* default */](300, 400, 40,"#8643FC", 1, 1),
+    ];
+  }
+
+  createNewAmoebaBatch() {
+    this.circles = this.createInitialAmoebas();
+    this.changeAmoebaColors();
+  }
+
+  didClickOnTarget(event) {
+    const rect = this.canvas.getBoundingClientRect();
+    const xPosition = event.clientX - rect.left;
+    const yPosition = event.clientY - rect.top;
+    const clickDistance = Math.sqrt(
+      Math.pow(xPosition - this.targetAmoeba.x, 2) +
+      Math.pow(yPosition - this.targetAmoeba.y, 2)
+    );
+    return (clickDistance < this.targetAmoeba.r);
+  }
+
+  draw() {
+    const ctx = this.canvas.getContext('2d');
+
+    if (this.whiteOutScreen) {
+      this.drawWhiteOutScreen();
+    } else {
+      this.drawBackground(ctx);
+      this.petri.draw(ctx);
+      this.drawScore();
+      this.circles.forEach((circle) => {
+        circle.draw(ctx);
+      });
+    }
   }
 
   drawBackground(ctx) {
@@ -165,56 +178,42 @@ class Game {
     ctx.fill();
   }
 
-  changeBackground(targetColor) {
-    const c = this.canvas.getContext('2d');
-    c.fillStyle = targetColor;
-    c.strokeStyle = targetColor;
-    c.fillRect(0, 0, 1000, 700);
+  drawInitialCanvas() {
+    this.canvas.width = 1000;
+    this.canvas.height = 775;
+
+    const ctx = this.canvas.getContext('2d');
+    ctx.fillStyle = '#4B6BF6';
+    ctx.strokeStyle = '#4B6BF6';
+    ctx.fillRect(0, 0, 1000, 700);
+
+    this.updateScore(0);
   }
 
-  move() {
-    this.circles.forEach((circle) => {
-      circle.move(this.petri, this.circles);
-    });
+  drawScore() {
+    const ctx = this.canvas.getContext('2d');
+    ctx.strokeStyle = "black";
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 700, 1000, 75);
+    ctx.font = "40px Arial";
+    ctx.fillStyle = "white";
+    ctx.fillText(`${this.currentScore}`, 800, 750);
   }
 
-  draw() {
-    const c = this.canvas.getContext('2d');
+  drawWhiteOutScreen() {
+    const ctx = this.canvas.getContext('2d');
+    ctx.fillStyle = "#FFFFFF";
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, 1000, 700);
+    ctx.fill();
+  }
 
-    if (this.whiteOutScreen) {
-      this.drawWhiteOutScreen();
+  handleClick(event) {
+    if (this.didClickOnTarget(event)) {
+      this.handleSuccessfulClick();
     } else {
-      this.drawBackground(c);
-      this.petri.draw(c);
-      this.drawScore();
-      this.circles.forEach((circle) => {
-        circle.draw(c);
-      });
+      this.handleFailedClick();
     }
-  }
-
-  checkForNoAmoebas() {
-    if (this.circles.length < 1) {
-      this.createNewAmoebaBatch();
-    }
-  }
-
-  didClickOnTarget(event) {
-    const rect = this.canvas.getBoundingClientRect();
-    const xPosition = event.clientX - rect.left;
-    const yPosition = event.clientY - rect.top;
-    const clickDistance = Math.sqrt(
-      Math.pow(xPosition - this.targetAmoeba.x, 2) +
-      Math.pow(yPosition - this.targetAmoeba.y, 2)
-    );
-    return (clickDistance < this.targetAmoeba.r);
-  }
-
-  handleSuccessfulClick() {
-    this.circles.shift();
-    this.updateScore(3);
-    this.checkForNoAmoebas();
-    this.changeAmoebaColors();
   }
 
   handleFailedClick() {
@@ -225,20 +224,17 @@ class Game {
     this.updateScore(-3);
   }
 
-  drawWhiteOutScreen() {
-    const c = this.canvas.getContext('2d');
-    c.fillStyle = "#FFFFFF";
-    c.strokeStyle = "#FFFFFF";
-    c.fillRect(0, 0, 1000, 700);
-    c.fill();
+  handleSuccessfulClick() {
+    this.circles.shift();
+    this.updateScore(3);
+    this.checkForNoAmoebas();
+    this.changeAmoebaColors();
   }
 
-  handleClick(event) {
-    if (this.didClickOnTarget(event)) {
-      this.handleSuccessfulClick();
-    } else {
-      this.handleFailedClick();
-    }
+  move() {
+    this.circles.forEach((circle) => {
+      circle.move(this.petri, this.circles);
+    });
   }
 
   play() {
@@ -257,130 +253,17 @@ class Game {
       this.playTurn();
     });
   }
+
+  updateScore(points) {
+    this.currentScore += points;
+  }
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (Game);
 
 
 /***/ }),
-/* 1 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-const DEFAULTS = {
-	RADIUS: 40,
-	SPEED: [1,1],
-	MIN_SPEED: 0.25,
-	MAX_SPEED: 0.40,
-};
-
-class Amoeba {
-  constructor(x, y, r, color, vx, vy) {
-    this.x = x;
-    this.y = y;
-    this.r = r;
-    this.color = color;
-    this.vx = vx;
-    this.vy = vy;
-  }
-
-	reverseDirectionIfAtPetriEdge(petri) {
-		const amoebaCenterDistanceToPetriCenter = Math.sqrt(
-			Math.pow((this.x - petri.centerX), 2) +
-			Math.pow((this.y - petri.centerY), 2)
-		 );
-
-		 if (amoebaCenterDistanceToPetriCenter >= (petri.radius - this.r)) {
-			 if (!this.isMovingTowardsB({x: petri.centerX, y: petri.centerY})) {
-				 this.vx = -(this.vx * Math.random() + Math.sign(this.vx) * 0.5);
-				 this.vy = -(this.vy * Math.random() + Math.sign(this.vy) * 0.5);
-			 }
-		}
-	}
-
-	isCollidingWithAmoeba(amoebaB) {
-		const distanceToOtherCenter = Math.sqrt(
-			Math.pow((this.x - amoebaB.x), 2) +
-			Math.pow((this.y - amoebaB.y), 2)
-		 );
-
-		 return distanceToOtherCenter <= (this.r + amoebaB.r);
-	}
-
-	collideWithAmoeba(amoebaB) {
-		if (this.isMovingTowardsB(amoebaB)) {
-			// handle head on collision
-			 this.vx = -this.vx * Math.random() - Math.sign(this.vx) * 500;
-			 this.vy = -this.vy * Math.random() - Math.sign(this.vx) * 500;
-		} else {
-			// handle rear end collision
-			this.vx = this.vx * Math.random() + Math.sign(this.vx) * 500;
-			this.vy = this.vy * Math.random() + Math.sign(this.vx) * 500;
-		}
-		this.capSpeed();
-	}
-
-	isMovingTowardsB(amoebaB) {
-		const vectorFromAtoB = {
-			x: (amoebaB.x - this.x),
-			y: (amoebaB.y - this.y)
-		};
-
-		const dotProduct = (vectorFromAtoB.x * this.vx) + (vectorFromAtoB.y * this.vy);
-		return dotProduct > 0;
-	}
-
-	currentSpeed() {
-		return Math.sqrt(Math.pow(this.vx, 2) + Math.pow(this.vy, 2));
-	}
-
-	capSpeed() {
-    const timesTooFast = this.currentSpeed() / DEFAULTS.MAX_SPEED;
-    if (this.currentSpeed() > DEFAULTS.MAX_SPEED) {
-			// if amoeba is too fast, divide by timesTooFast.
-      this.vx = this.vx / timesTooFast;
-      this.vy = this.vy / timesTooFast;
-    } else if (this.currentSpeed() < DEFAULTS.MIN_SPEED) {
-			// if its too slow, add a little bit to its velocity
-      this.vx = this.vx + 0.50;
-      this.vy = this.vy + 0.50;
-    }
-  }
-
-	checkAmoebaforCollisions(petri, amoebas) {
-		this.reverseDirectionIfAtPetriEdge(petri);
-
-		amoebas.forEach((amoebaB) => {
-			if (amoebaB === this) {
-				return;
-			}
-
-			if (this.isCollidingWithAmoeba(amoebaB)) {
-				this.collideWithAmoeba(amoebaB);
-				amoebaB.collideWithAmoeba(this);
-			}
-		});
-	}
-
-	draw(ctx) {
-		ctx.fillStyle = this.color;
-		ctx.beginPath();
-		ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
-		ctx.fill();
-		ctx.closePath();
-	}
-
-	move(petri, amoebas) {
-		this.checkAmoebaforCollisions(petri, amoebas);
-		this.x += this.vx;
-		this.y += this.vy;
-	}
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (Amoeba);
-
-
-/***/ }),
+/* 1 */,
 /* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -3973,6 +3856,125 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ])
 });
 ;
+
+/***/ }),
+/* 6 */,
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+const DEFAULTS = {
+	RADIUS: 40,
+	SPEED: [1,1],
+	MIN_SPEED: 0.25,
+	MAX_SPEED: 0.40,
+};
+
+class Amoeba {
+  constructor(x, y, r, color, vx, vy) {
+    this.x = x;
+    this.y = y;
+    this.r = r;
+    this.color = color;
+    this.vx = vx;
+    this.vy = vy;
+  }
+
+	capSpeed() {
+    const timesTooFast = this.currentSpeed() / DEFAULTS.MAX_SPEED;
+    if (this.currentSpeed() > DEFAULTS.MAX_SPEED) {
+			// if amoeba is too fast, divide by timesTooFast.
+      this.vx = this.vx / timesTooFast;
+      this.vy = this.vy / timesTooFast;
+    } else if (this.currentSpeed() < DEFAULTS.MIN_SPEED) {
+			// if its too slow, add a little bit to its velocity
+      this.vx = this.vx + 0.50;
+      this.vy = this.vy + 0.50;
+    }
+  }
+
+	checkAmoebaforCollisions(petri, amoebas) {
+		this.reverseDirectionIfAtPetriEdge(petri);
+
+		amoebas.forEach((amoebaB) => {
+			if (amoebaB === this) {
+				return;
+			}
+
+			if (this.isCollidingWithAmoeba(amoebaB)) {
+				this.collideWithAmoeba(amoebaB);
+				amoebaB.collideWithAmoeba(this);
+			}
+		});
+	}
+
+	collideWithAmoeba(amoebaB) {
+		if (this.isMovingTowardsB(amoebaB)) {
+			// handle head on collision
+			 this.vx = -this.vx * Math.random() - Math.sign(this.vx) * 500;
+			 this.vy = -this.vy * Math.random() - Math.sign(this.vx) * 500;
+		} else {
+			// handle rear end collision
+			this.vx = this.vx * Math.random() + Math.sign(this.vx) * 500;
+			this.vy = this.vy * Math.random() + Math.sign(this.vx) * 500;
+		}
+		this.capSpeed();
+	}
+
+	currentSpeed() {
+		return Math.sqrt(Math.pow(this.vx, 2) + Math.pow(this.vy, 2));
+	}
+
+	draw(ctx) {
+		ctx.fillStyle = this.color;
+		ctx.beginPath();
+		ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
+		ctx.fill();
+		ctx.closePath();
+	}
+
+	isCollidingWithAmoeba(amoebaB) {
+		const distanceToOtherCenter = Math.sqrt(
+			Math.pow((this.x - amoebaB.x), 2) +
+			Math.pow((this.y - amoebaB.y), 2)
+		 );
+
+		 return distanceToOtherCenter <= (this.r + amoebaB.r);
+	}
+
+	isMovingTowardsB(amoebaB) {
+		const vectorFromAtoB = {
+			x: (amoebaB.x - this.x),
+			y: (amoebaB.y - this.y)
+		};
+
+		const dotProduct = (vectorFromAtoB.x * this.vx) + (vectorFromAtoB.y * this.vy);
+		return dotProduct > 0;
+	}
+
+	move(petri, amoebas) {
+		this.checkAmoebaforCollisions(petri, amoebas);
+		this.x += this.vx;
+		this.y += this.vy;
+	}
+
+	reverseDirectionIfAtPetriEdge(petri) {
+		const amoebaCenterDistanceToPetriCenter = Math.sqrt(
+			Math.pow((this.x - petri.centerX), 2) +
+			Math.pow((this.y - petri.centerY), 2)
+		 );
+
+		 if (amoebaCenterDistanceToPetriCenter >= (petri.radius - this.r)) {
+			 if (!this.isMovingTowardsB({x: petri.centerX, y: petri.centerY})) {
+				 this.vx = -(this.vx * Math.random() + Math.sign(this.vx) * 0.5);
+				 this.vy = -(this.vy * Math.random() + Math.sign(this.vy) * 0.5);
+			 }
+		}
+	}
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (Amoeba);
+
 
 /***/ })
 /******/ ]);
