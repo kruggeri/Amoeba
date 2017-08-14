@@ -1,8 +1,6 @@
 import Amoeba from './amoebas.js';
 import Petri from './petri.js';
 const distinctColors = require('distinct-colors');
-const chromaJS = require('chroma-js');
-const palette = distinctColors();
 
 class Game {
   constructor() {
