@@ -17,14 +17,16 @@ class Amoeba {
 
 	capSpeed() {
     const timesTooFast = this.currentSpeed() / DEFAULTS.MAX_SPEED;
+
+		// if amoeba is too fast, divide by timesTooFast.
     if (this.currentSpeed() > DEFAULTS.MAX_SPEED) {
-			// if amoeba is too fast, divide by timesTooFast.
-      this.vx = this.vx / timesTooFast;
-      this.vy = this.vy / timesTooFast;
+      this.vx /= timesTooFast;
+      this.vy /= timesTooFast;
+
+		// if its too slow, add a little bit to its velocity
     } else if (this.currentSpeed() < DEFAULTS.MIN_SPEED) {
-			// if its too slow, add a little bit to its velocity
-      this.vx = this.vx + 0.50;
-      this.vy = this.vy + 0.50;
+      this.vx += 0.50;
+      this.vy += 0.50;
     }
   }
 
@@ -32,9 +34,8 @@ class Amoeba {
 		this.reverseDirectionIfAtPetriEdge(petri);
 
 		amoebas.forEach((amoebaB) => {
-			if (amoebaB === this) {
-				return;
-			}
+			// return when checking itself
+			if (amoebaB === this) return;
 
 			if (this.isCollidingWithAmoeba(amoebaB)) {
 				this.collideWithAmoeba(amoebaB);
@@ -44,15 +45,13 @@ class Amoeba {
 	}
 
 	collideWithAmoeba(amoebaB) {
-		if (this.isMovingTowardsB(amoebaB)) {
-			// handle head on collision
-			 this.vx = -this.vx * Math.random() - Math.sign(this.vx) * 500;
-			 this.vy = -this.vy * Math.random() - Math.sign(this.vx) * 500;
-		} else {
-			// handle rear end collision
-			this.vx = this.vx * Math.random() + Math.sign(this.vx) * 500;
-			this.vy = this.vy * Math.random() + Math.sign(this.vx) * 500;
-		}
+		// handle head on collision
+		const collisionDirection = this.isMovingTowardsB(amoebaB) ? -1 : 1;
+
+		[this.vx, this.vy].forEach(dir => {
+			dir = dir * collisionDirection * Math.random() + Math.sign(dir) * collisionDirection * 500;
+		})
+
 		this.capSpeed();
 	}
 
@@ -101,8 +100,9 @@ class Amoeba {
 
 		 if (amoebaCenterDistanceToPetriCenter >= (petri.radius - this.r)) {
 			 if (!this.isMovingTowardsB({x: petri.centerX, y: petri.centerY})) {
-				 this.vx = -(this.vx * Math.random() + Math.sign(this.vx) * 0.5);
-				 this.vy = -(this.vy * Math.random() + Math.sign(this.vy) * 0.5);
+				 [this.vx, this.vy].forEach(dir => {
+					 dir = -(dir * Math.random() + Math.sign(dir) * 0.5);
+				 })
 			 }
 		}
 	}
