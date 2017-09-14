@@ -1,3 +1,27 @@
+html, body, button, h2, input, ul, input, link, li, a, button {
+  margin: 0;
+  border: 0;
+  padding: 0;
+
+  list-style: none;
+  text-align: inherit;
+  text-decoration: inherit;
+  color: inherit;
+  background: transparent;
+  outline: none
+}
+
+body {
+  background: white;
+  color: black;
+  font-size: 20px;
+  height: 100%;
+  font-weight: lighter;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+}
+
 .game-container {
   display: flex;
   justify-content: center;
@@ -7,4 +31,15 @@
 canvas {
   background-color: 175;
   cursor: pointer;
+}
+
+.instructions {
+  font-family: sans-serif;
+  color: black;
+  justify-content: center;
+  margin-top: 100px;
+}
+
+.instructions a {
+  color: magenta;
 }
