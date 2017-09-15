@@ -3,11 +3,11 @@
 [Amoeba](http://www.amoeba.fun/)
 
 ## Background
-Amoeba is a color matching game of perception inspired by the color theory of [Josef Albers' "Interaction of Color"](https://itunes.apple.com/us/app/interaction-of-color-by-josef-albers/id664296461?mt=8) and the game [Specimen](https://www.producthunt.com/posts/specimen-a-game-about-color) .
+Amoeba is a color matching game of perception inspired by the color theory of [Josef Albers' "Interaction of Color"](https://itunes.apple.com/us/app/interaction-of-color-by-josef-albers/id664296461?mt=8) and the game [Specimen](https://www.producthunt.com/posts/specimen-a-game-about-color).
 
 A long term student of color theory, I wanted to test color perception in a way that was meditative and calming. A welcome break from my regular computer screen.
 
-![amoeba background](app/assets/images/amoeba.gif)
+![amoeba](app/assets/amoeba.gif)
 
 
 ## How it works
